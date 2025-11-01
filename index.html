@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام السجلات الموحد (واجهة دخول بملء الشاشة)</title>
+    
+    <link rel="icon" href="https://i.ibb.co/0jRJCBmL/111.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/0jRJCBmL/111.jpg" sizes="192x192">
+    
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- أنماط الثيم العام (عصري) --- */
+        :root {
+            --primary-color: #007bff; /* أزرق نقي وعصري */
+            --secondary-color: #6c757d; /* رمادي هادئ */
+            --accent-color: #17a2b8; /* سماوي للتأكيد */
+            --success-color: #28a745; /* أخضر للنجاح */
+            --danger-color: #dc3545; /* أحمر للخطر/الحذف */
+            --text-dark: #343a40;
+            --text-light: #fff;
+            --bg-light: #f8f9fa; /* خلفية خفيفة جداً */
+            --card-bg: #ffffff;
+            --border-color: #e9ecef;
+            --radius: 8px;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            direction: rtl; 
+            text-align: right;
+            min-height: 100vh;
+            display: flex; 
+            flex-direction: column;
+            background-color: var(--bg-light); 
+        }
+
+        /* --- واجهة التطبيق الرئيسية (بعد الدخول) --- */
+        #app-container {
+            display: none; /* مخفي مبدئياً */
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .container {
+            max-width: 1300px; 
+            margin: 30px auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); 
+            flex-grow: 1; 
+        }
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: var(--text-dark);
+            background-color: var(--border-color);
+            padding: 12px 15px;
+            margin-top: 35px;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            border-radius: var(--radius);
+            border-right: 5px solid var(--primary-color);
+        }
+        
+        /* --- واجهة تسجيل الدخول (ملء الشاشة) --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #eaf4ff, #ffffff);
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999; /* لضمان ظهورها فوق كل شيء */
+            text-align: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 60px 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 550px;
+        }
+
+        .login-card h2 {
+            font-size: 1.8em;
+            color: var(--primary-color);
+            border: none;
+            background: none;
+            margin-bottom: 30px;
+        }
+
+        .login-btn {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px; 
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 10px 0;
+            transition: all 0.3s ease; 
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-btn:nth-child(2) {
+            background-color: var(--accent-color);
+        }
+
+        .login-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-3px) scale(1.01); 
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* --- واجهة التنقل الرئيسية (القائمة) --- */
+        #main-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .menu-btn {
+            background-color: var(--card-bg);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            padding: 30px 20px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .menu-btn:hover {
+            background-color: #e9f5ff; 
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- شريط الوضعيات (تم تبسيطه ليعرض فقط) --- */
+        .mode-toggle-bar {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: var(--border-color);
+            border-radius: var(--radius);
+            display: flex;
+            justify-content: center;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .mode-toggle-bar .status-text {
+            padding: 0 10px;
+        }
+        
+        .back-to-menu-btn {
+            background-color: var(--secondary-color); 
+            color: var(--text-light);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 20px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        .back-to-menu-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* --- تنسيق النماذج (Forms) --- */
+        .log-form-generic {
+            /* ... (الأنماط كما كانت في الثيم العصري) ... */
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+
+        .log-form-generic div {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .log-form-generic label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        .log-form-generic input[type="text"], 
+        .log-form-generic input[type="date"],
+        .log-form-generic input[type="time"],
+        .log-form-generic input[type="number"],
+        .log-form-generic select {
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: var(--radius);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: var(--bg-light);
+        }
+
+        .log-form-generic input:focus,
+        .log-form-generic select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .log-form-generic button[type="submit"] {
+            background-color: var(--success-color);
+            color: var(--text-light);
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+        }
+        .log-form-generic button[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+
+        /* --- تنسيق الجداول (Tables) --- */
+        .log-table-generic {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-radius: var(--radius);
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .log-table-generic th, .log-table-generic td {
+            padding: 12px 10px;
+            text-align: center;
+        }
+
+        .log-table-generic th {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            font-weight: 700;
+        }
+        .log-table-generic td {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .log-table-generic tbody tr:nth-child(even) td {
+            background-color: #f6f6f6; 
+        }
+
+        /* زر الحذف داخل الجدول */
+        .delete-btn {
+            background-color: var(--danger-color);
+            color: var(--text-light);
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        
+        /* إخفاء واجهات السجلات افتراضياً */
+        .log-page { display: none; }
+        .admin-only { display: none; }
+    </style>
+</head>
+<body>
+    
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>🔒 نظام إدارة السجلات والجودة</h2>
+            <p style="color: var(--secondary-color); font-size: 1.1em; margin-bottom: 30px;">الرجاء اختيار وضع الدخول للمتابعة:</p>
+            
+            <button class="login-btn" onclick="promptAdminLogin(false)">👤 دخول كزائر (قراءة فقط)</button>
+            <button class="login-btn" onclick="promptAdminLogin(true)">🔑 دخول آمن (إدارة وإضافة)</button>
+        </div>
+    </div>
+
+
+    <div id="app-container">
+        <div class="container">
+            <h1>نظام السجلات الموحد والإدارة المركزية</h1>
+
+            <div id="main-page">
+                <h2>اختيار السجل المطلوب</h2>
+                <div id="main-menu">
+                    <button class="menu-btn" onclick="navigateToLog('fridge-temp-log')">🌡️ سجل قياس درجة حرارة الثلاجات</button>
+                    <button class="menu-btn" onclick="navigateToLog('cooked-log')">🥩 سجل المطهي والمجهز والمتبل</button>
+                    <button class="menu-btn" onclick="navigateToLog('sanitation-log')">🧼 سجل تنظيف وتعقيم المعدات</button>
+                    <button class="menu-btn" onclick="navigateToLog('oil-disposal-log')">💧 سجل إعدام الزيت</button>
+                    <button class="menu-btn" onclick="navigateToLog('receipt-log')">📦 سجل مراقبة الاستلام</button>
+                    <button class="menu-btn" onclick="navigateToLog('car-temp-log')">🚚 سجل قياس درجة حرارة السيارة</button>
+                    <button class="menu-btn" onclick="navigateToLog('lectures-log')">🗣️ سجل المحاضرات</button>
+                    <button class="menu-btn" onclick="navigateToLog('thawing-log')">🧊 سجل تسييح اللحمة للتشغيل</button>
+                    <button class="menu-btn" onclick="navigateToLog('medical-log')">🤒 سجل الحالات المرضية</button>
+                    <button class="menu-btn" onclick="navigateToLog('returns-log')">↩️ سجل المرتجعات</button>
+                    <button class="menu-btn" onclick="navigateToLog('visitor-survey')">📋 استبيان صحة الزائرين</button>
+                </div>
+            </div>
+
+            <div id="fridge-temp-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="fridge-temp-log-mode-status"></span>
+                </div>
+                <form id="fridge-temp-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل حرارة ثلاجة جديد</h2>
+                    <div><label for="ft-date">التاريخ:</label><input type="date" id="ft-date" required></div>
+                    <div><label for="ft-number">رقم الثلاجة:</label><input type="number" id="ft-number" required min="1" placeholder="مثال: 1, 2, 3"></div>
+                    <div><label for="ft-start">درجة الحرارة (بداية اليوم):</label><input type="number" id="ft-start" required placeholder="بالدرجة المئوية"></div>
+                    <div><label for="ft-end">درجة الحرارة (نهاية اليوم):</label><input type="number" id="ft-end" required placeholder="بالدرجة المئوية"></div>
+                    <div><label for="ft-notes">الملاحظات:</label><input type="text" id="ft-notes" placeholder="ملاحظات إضافية"></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات درجات حرارة الثلاجات الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="fridge-temp-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>رقم الثلاجة</th>
+                                <th>حرارة (بداية اليوم)</th>
+                                <th>حرارة (نهاية اليوم)</th>
+                                <th>الملاحظات</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fridge-temp-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="cooked-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="cooked-log-mode-status"></span>
+                </div>
+                <form id="cooked-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل مطهي/مجهز جديد</h2>
+                    <div><label for="c-date">التاريخ:</label><input type="date" id="c-date" required></div>
+                    <div><label for="c-product">نوع المنتج:</label><select id="c-product" required><option value="كفته">كفته</option><option value="سجق">سجق</option><option value="كبده">كبده</option><option value="روزبيف">روزبيف</option><option value="شاورمه">شاورمه</option></select></div>
+                    <div><label for="c-status">حالة المنتج:</label><select id="c-status" required><option value="مطهى">مطهى</option><option value="متبل">متبل</option><option value="مجهز">مجهز</option></select></div>
+                    <div><label for="c-fire-temp">درجة الحرارة على النار:</label><input type="number" id="c-fire-temp" required placeholder="بالدرجة المئوية"></div>
+                    <div><label for="c-fridge-temp">درجة الحرارة في الثلاجة:</label><input type="number" id="c-fridge-temp" required placeholder="بالدرجة المئوية"></div>
+                    <div><label for="c-inspector">تم الفحص بواسطة:</label><select id="c-inspector" required><option value="د.الهام">د.الهام</option></select></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات المطهي والمجهز والمتبل الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="cooked-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>نوع المنتج</th>
+                                <th>حالة المنتج</th>
+                                <th>حرارة النار</th>
+                                <th>حرارة الثلاجة</th>
+                                <th>تم الفحص بواسطة</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cooked-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="sanitation-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="sanitation-log-mode-status"></span>
+                </div>
+                <form id="sanitation-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل نظافة/تعقيم جديد</h2>
+                    <div><label for="s-date">التاريخ:</label><input type="date" id="s-date" required></div>
+                    <div><label for="s-type">نوع المطهر:</label><select id="s-type" required><option value="سائل">سائل</option></select></div>
+                    <div><label for="s-items">الأدوات التي تم تطهيرها:</label><select id="s-items" required><option value="جميع الادوات والمعدات النستخدمه في العمل اليوم">جميع الادوات والمعدات النستخدمه في العمل اليوم</option></select></div>
+                    <div><label for="s-time">وقت التطهير:</label><select id="s-time" required><option value="قبل العمل">قبل العمل</option></select></div>
+                    <div><label for="s-responsible">المسؤول:</label><select id="s-responsible" required><option value="صلاح صابر">صلاح صابر</option></select></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات التعقيم والنظافة الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="sanitation-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>نوع المطهر</th>
+                                <th>الأدوات المطهرة</th>
+                                <th>وقت التطهير</th>
+                                <th>المسؤول</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sanitation-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="oil-disposal-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="oil-disposal-log-mode-status"></span>
+                </div>
+                <form id="oil-disposal-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل إعدام زيت جديد</h2>
+                    <div><label for="o-date">التاريخ:</label><input type="date" id="o-date" required></div>
+                    <div><label for="o-quantity">كمية الزيت المعدم (باللتر):</label><input type="number" id="o-quantity" required min="1" placeholder="باللتر"></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات إعدام الزيت الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="oil-disposal-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>كمية الزيت المعدم (باللتر)</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="oil-disposal-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="receipt-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="receipt-log-mode-status"></span>
+                </div>
+                <form id="receipt-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل استلام بضائع جديد</h2>
+                    <div><label for="r-date">تاريخ الاستلام:</label><input type="date" id="r-date" required></div>
+                    <div><label for="r-product">نوع المنتج:</label><select id="r-product" required><option value="لحمه برازيلي">لحمه برازيلي</option><option value="كبده امريكي">كبده امريكي</option><option value="سجق متبل">سجق متبل</option></select></div>
+                    <div><label for="r-temp">درجة الحرارة:</label><input type="number" id="r-temp" required placeholder="بالدرجة المئوية"></div>
+                    <div><label for="r-inspection">الكشف الطبي الظاهري:</label><select id="r-inspection" required><option value="بالكشف الطبي الظاهري تبين انها صالحه للاستهلاك الادمي ومحتفظه بخواصها الطبيعيه">بالكشف الطبي الظاهري تبين انها صالحه للاستهلاك الادمي ومحتفظه بخواصها الطبيعيه</option></select></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات مراقبة الاستلام الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="receipt-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>تاريخ الاستلام</th>
+                                <th>نوع المنتج</th>
+                                <th>درجة الحرارة</th>
+                                <th>الكشف الطبي الظاهري على المنتج</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receipt-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="car-temp-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="car-temp-log-mode-status"></span>
+                </div>
+                <form id="car-temp-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل حرارة سيارة جديد</h2>
+                    <div><label for="ct-date">التاريخ:</label><input type="date" id="ct-date" required></div>
+                    <div><label for="ct-temp">درجة حرارة السيارة:</label><input type="number" id="ct-temp" required placeholder="بالدرجة المئوية"></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات درجات حرارة السيارة الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="car-temp-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>درجة حرارة السيارة</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="car-temp-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="lectures-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="lectures-log-mode-status"></span>
+                </div>
+                <form id="lectures-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل محاضرة جديد</h2>
+                    <div><label for="l-date">التاريخ:</label><input type="date" id="l-date" required></div>
+                    <div><label for="l-type">نوع المحاضرة:</label>
+                        <select id="l-type" required>
+                            <option value="النظافه العامه">النظافه العامه</option>
+                            <option value="التطهير والتعقيم">التطهير والتعقيم</option>
+                            <option value="كيفيه استلام اللحوم">كيفيه استلام اللحوم</option>
+                            <option value="التعامل مع الاصابه اثناء العمل">التعامل مع الاصابه اثناء العمل</option>
+                            <option value="تعقيم المعدات عند العمل">تعقيم المعدات عند العمل</option>
+                            <option value="النظافه العامه للمكان والتطهير">النظافه العامه للمكان والتطهير</option>
+                            <option value="نظافه الافراد والتعامل مع الحالات المرضيه">نظافه الافراد والتعامل مع الحالات المرضيه</option>
+                            <option value="مراجعه كل ما سبق">مراجعه كل ما سبق</option>
+                        </select>
+                    </div>
+                    <div><label for="l-lecturer">المدرب/المحاضر:</label><select id="l-lecturer" required><option value="د.الهام">د.الهام</option></select></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات المحاضرات الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="lectures-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>نوع المحاضرة</th>
+                                <th>المدرب/المحاضر</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lectures-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="thawing-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="thawing-log-mode-status"></span>
+                </div>
+                <form id="thawing-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل تسييح لحمة جديد</h2>
+                    <div><label for="t-date">التاريخ:</label><input type="date" id="t-date" required></div>
+                    <div><label for="t-type">نوع اللحمة:</label><input type="text" id="t-type" required placeholder="مثال: دجاج، لحم بقري"></div>
+                    <div><label for="t-number">رقم الثلاجة:</label><input type="number" id="t-number" required min="1" placeholder="مثال: 1"></div>
+                    <div><label for="t-temp">درجة الحرارة:</label><input type="number" id="t-temp" required placeholder="بالدرجة المئوية"></div>
+                    <div><label for="t-notes">ملاحظات:</label><input type="text" id="t-notes" placeholder="ملاحظات إضافية"></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات تسييح اللحمة الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="thawing-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>نوع اللحمة</th>
+                                <th>رقم الثلاجة</th>
+                                <th>درجة الحرارة</th>
+                                <th>ملاحظات</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="thawing-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="medical-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="medical-log-mode-status"></span>
+                </div>
+                <form id="medical-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل حالة مرضية جديدة</h2>
+                    <div><label for="m-date">التاريخ:</label><input type="date" id="m-date" required></div>
+                    <div><label for="m-name">اسم الحالة:</label><input type="text" id="m-name" required placeholder="اسم الموظف"></div>
+                    <div><label for="m-symptoms">الأعراض:</label><input type="text" id="m-symptoms" required placeholder="نزلة برد، مغص.."></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات الحالات المرضية الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="medical-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>اسم الحالة</th>
+                                <th>الأعراض</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="medical-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="returns-log" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="returns-log-mode-status"></span>
+                </div>
+                <form id="returns-log-form" class="log-form-generic admin-only">
+                    <h2>إضافة سجل مرتجع جديد</h2>
+                    <div><label for="ret-date">التاريخ:</label><input type="date" id="ret-date" required></div>
+                    <div><label for="ret-product">نوع المنتج المرتجع إلى التاجر/المورد:</label><input type="text" id="ret-product" required placeholder="اسم المنتج والكمية"></div>
+                    <button type="submit">تسجيل السجل</button>
+                </form>
+                <h2>سجلات المرتجعات الحالية</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="returns-log-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>نوع المنتج المرتجع إلى التاجر/المورد</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="returns-log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="visitor-survey" class="log-page">
+                <button class="back-to-menu-btn" onclick="navigateToLog('main-page')">العودة للقائمة الرئيسية</button>
+                <div class="mode-toggle-bar">
+                    <span style="color: var(--primary-color);">الوضع الحالي:</span>
+                    <span class="status-text" id="visitor-survey-mode-status"></span>
+                </div>
+                
+                <form id="visitor-survey-form" class="log-form-generic admin-only" style="display: block; grid-template-columns: 1fr;">
+                    <h2>استبيان صحة الزائرين (يجب ملؤه من قبل الزائر فقط)</h2>
+                    <div id="visitor-form">
+                        <div class="visitor-info-row">
+                            <label for="vs-name">الاسم:</label><input type="text" id="vs-name" required>
+                            <label for="vs-date">تاريخ الزيارة:</label><input type="date" id="vs-date" required>
+                            <label for="vs-purpose">الغرض من الزيارة:</label><input type="text" id="vs-purpose" required>
+                            <label for="vs-institution">المؤسسة التابعة لها:</label><input type="text" id="vs-institution" required>
+                        </div>
+
+                        <div class="visitor-symptoms-section">
+                            <h3>السؤال: خلال الـ 48 ساعة الأخيرة، هل شعرت بأحد الأعراض التالية؟</h3>
+                            <div style="overflow-x: auto;"> 
+                                <table class="symptom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>العرض</th>
+                                            <th>نعم</th>
+                                            <th>لا</th>
+                                            <th>السؤال</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>هذيان</td><td><input type="radio" name="symptom1" value="نعم" required></td><td><input type="radio" name="symptom1" value="لا"></td><td>هل تعاني في الوقت الحالي من التهاب الحلق أو ارتفاع بدرجة الحرارة؟</td></tr>
+                                        <tr><td>قيء</td><td><input type="radio" name="symptom2" value="نعم" required></td><td><input type="radio" name="symptom2" value="لا"></td><td>هل تعاني في الوقت الحالي من كحة إنتاجية أو عطس؟</td></tr>
+                                        <tr><td>إسهال</td><td><input type="radio" name="symptom3" value="نعم" required></td><td><input type="radio" name="symptom3" value="لا"></td><td>هل تعاني في الوقت الحالي من إفرازات من العين أو الأذن أو الفم؟</td></tr>
+                                        <tr><td></td><td></td><td></td><td>هل تعاني حاليًا أو عانيت خلال الأيام السبعة الماضية من التهاب الكبد أو اليرقان؟</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="visitor-declaration">
+                            <p>أقر بأن الإجابات على هذه الأسئلة والمعلومات الإضافية المقدمة دقيقة حسب أفضل معرفتي وأوافق على إبلاغ مرشد الزيارة إذا عانيت من أي من الأعراض المذكورة أعلاه أثناء الزيارة:</p>
+                            <label for="vs-signature">التوقيع:</label><input type="text" id="vs-signature" placeholder="توقيع الزائر (كتابة الاسم)">
+                            <label for="vs-signature-date">التاريخ:</label><input type="date" id="vs-signature-date" required>
+                        </div>
+
+                        <button type="submit" style="grid-column: span 2;">تسجيل بيانات الزائر</button>
+                    </div>
+                </form>
+                
+                <h2>سجلات الزائرين المسجلين</h2>
+                <div style="overflow-x: auto;"> 
+                    <table id="visitor-survey-table" class="log-table-generic">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الاسم</th>
+                                <th>الغرض من الزيارة</th>
+                                <th>الأعراض (ملخص)</th>
+                                <th class="action-cell admin-only">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitor-survey-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="infoModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn" onclick="closeModal()">&times;</span>
+                    <h3 id="modal-title" style="color: var(--secondary-color);"></h3>
+                    <p id="modal-text" style="line-height: 1.8;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        //              JAVASCRIPT LOGIC
+        // =============================================
+
+        const ADMIN_PASSWORD = '111975'; 
+        
+        // المتغير العالمي لتخزين وضع المستخدم بعد تسجيل الدخول
+        let isGlobalAdminMode = false; 
+
+        // تعريف جميع السجلات
+        const LOG_KEYS = {
+            'fridge-temp-log': 'fridgeTempLog',
+            'cooked-log': 'cookedLog',
+            'sanitation-log': 'sanitationLog',
+            'oil-disposal-log': 'oilDisposalLog',
+            'receipt-log': 'receiptLog',
+            'car-temp-log': 'carTempLog',
+            'lectures-log': 'lecturesLog',
+            'thawing-log': 'thawingLog',
+            'medical-log': 'medicalLog',
+            'returns-log': 'returnsLog',
+            'visitor-survey': 'visitorSurvey'
+        };
+
+        const logs = {};
+
+        Object.keys(LOG_KEYS).forEach(logId => {
+            logs[logId] = JSON.parse(localStorage.getItem(LOG_KEYS[logId])) || [];
+        });
+
+        // --- Core Functions ---
+
+        function saveLogs(logId) {
+            localStorage.setItem(LOG_KEYS[logId], JSON.stringify(logs[logId]));
+        }
+
+        function deleteLogEntry(logId, index) {
+            if (confirm(`هل أنت متأكد من حذف هذا السجل؟`)) {
+                logs[logId].splice(index, 1); 
+                saveLogs(logId);
+                renderLogs(logId);
+            }
+        }
+        
+        // --- Modal Functions (كما كانت) ---
+
+        const modal = document.getElementById("infoModal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalText = document.getElementById("modal-text");
+
+        const MODAL_MESSAGES = {
+            'cooked-log': {
+                title: "📌 ملاحظة هامة: مدة صلاحية المنتجات",
+                text: "جميع المنتجات **المطهية والمجهزة والمتبلة** تكون مدة صلاحيتها **3 أيام** من تاريخ الطهي أو التجهيز أو التتبيل."
+            },
+            'sanitation-log': {
+                title: "📌 ملاحظة: مادة التطهير المستخدمة",
+                text: "المطهر المعتمد للاستخدام هو **GALDOMISH**."
+            },
+            'lectures-log': {
+                title: "📌 ملاحظة: محتوى المحاضرات",
+                text: "تهدف المحاضرات إلى تدريب العمال على: **النظافة العامة والشخصية، التطهير والتعقيم**، وكافة الإجراءات الصحية."
+            }
+        };
+
+        function showModal(logId) {
+            const message = MODAL_MESSAGES[logId];
+            if (message) {
+                modalTitle.textContent = message.title;
+                modalText.innerHTML = message.text;
+                modal.style.display = "block";
+            }
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // --- Login & Mode Management ---
+        
+        function promptAdminLogin(is_admin_mode) {
+            if (is_admin_mode) {
+                const password = prompt('الرجاء إدخال كلمة المرور لدخول وضع الإدارة:');
+                if (password === ADMIN_PASSWORD) {
+                    startApp(true);
+                } else if (password !== null) {
+                    alert('كلمة المرور غير صحيحة. سيتم الدخول كزائر.');
+                    startApp(false);
+                }
+            } else {
+                startApp(false);
+            }
+        }
+
+        function startApp(is_admin) {
+            isGlobalAdminMode = is_admin;
+            
+            // إخفاء شاشة الدخول وعرض واجهة التطبيق
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            
+            // عرض القائمة الرئيسية
+            navigateToLog('main-page'); 
+        }
+
+        function navigateToLog(pageId) {
+            // إخفاء جميع الصفحات
+            document.getElementById('main-page').style.display = 'none';
+            document.querySelectorAll('.log-page').forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            // عرض الصفحة المطلوبة
+            document.getElementById(pageId).style.display = 'block';
+
+            if (pageId !== 'main-page') {
+                applyGlobalMode(pageId); 
+                showModal(pageId); 
+            }
+        }
+        
+        function applyGlobalMode(logId) {
+            const is_admin = isGlobalAdminMode;
+            
+            const statusText = document.getElementById(`${logId}-mode-status`);
+            const form = document.getElementById(`${logId}-form`);
+            
+            // تحديث شريط الوضع الحالي
+            if (statusText) {
+                statusText.textContent = is_admin ? 'إدارة (إضافة وحذف)' : 'زائر (قراءة فقط)';
+                statusText.style.color = is_admin ? 'var(--danger-color)' : 'var(--success-color)';
+            }
+            
+            // عرض أو إخفاء نموذج الإدخال
+            if (form) {
+                const displayStyle = (logId === 'visitor-survey' ? 'block' : 'grid');
+                form.style.display = is_admin ? displayStyle : 'none';
+            }
+            
+            renderLogs(logId);
+        }
+
+
+        // --- Rendering Logic (تم التحديث ليشمل جميع السجلات) ---
+
+        function renderLogs(logId) {
+            const tbody = document.getElementById(`${logId}-body`);
+            tbody.innerHTML = '';
+            
+            const currentLogs = logs[logId];
+            const isAdmin = isGlobalAdminMode; // استخدام الوضع العام
+
+            // إظهار أو إخفاء عمود الحذف (الخلية الأخيرة في الرأس)
+            const headerRow = document.querySelector(`#${logId}-table thead tr`);
+            if (headerRow) {
+                const lastHeader = headerRow.cells[headerRow.cells.length - 1];
+                lastHeader.style.display = isAdmin ? 'table-cell' : 'none';
+            }
+
+            currentLogs.forEach((log, index) => {
+                const row = tbody.insertRow();
+                
+                let data = [];
+                switch(logId) {
+                    case 'fridge-temp-log':
+                        data = [log.date, log.number, `${log.start}°`, `${log.end}°`, log.notes];
+                        break;
+                    case 'cooked-log':
+                        data = [log.date, log.product, log.status, `${log.fireTemp}°`, `${log.fridgeTemp}°`, log.inspector];
+                        break;
+                    case 'sanitation-log':
+                        data = [log.date, log.type, log.items, log.time, log.responsible];
+                        break;
+                    case 'oil-disposal-log':
+                        data = [log.date, `${log.quantity} لتر`];
+                        break;
+                    case 'receipt-log':
+                        data = [log.date, log.product, `${log.temp}°`, log.inspection];
+                        break;
+                    case 'car-temp-log':
+                        data = [log.date, `${log.temp}°`];
+                        break;
+                    case 'lectures-log':
+                        data = [log.date, log.type, log.lecturer];
+                        break;
+                    case 'thawing-log':
+                        data = [log.date, log.type, log.number, `${log.temp}°`, log.notes];
+                        break;
+                    case 'medical-log':
+                        data = [log.date, log.name, log.symptoms];
+                        break;
+                    case 'returns-log':
+                        data = [log.date, log.product];
+                        break;
+                    case 'visitor-survey':
+                        let summary = log.symptoms.includes('نعم') ? '⚠️ نعم (خطر)' : '✅ لا';
+                        data = [log.date, log.name, log.purpose, summary];
+                        break;
+                }
+                
+                data.forEach(text => {
+                    row.insertCell().textContent = text;
+                });
+
+                const actionCell = row.insertCell();
+                actionCell.classList.add('action-cell');
+                
+                if (isAdmin) {
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'حذف';
+                    deleteButton.classList.add('delete-btn');
+                    deleteButton.onclick = () => deleteLogEntry(logId, index);
+                    actionCell.appendChild(deleteButton);
+                } else {
+                     actionCell.style.display = 'none'; 
+                }
+            });
+        }
+        
+        // --- Form Submission Handlers (كما كانت) ---
+        
+        function setupLogForm(logId, getNewLogData) {
+            const form = document.getElementById(`${logId}-form`);
+            if (!form) return;
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); 
+                if (!isGlobalAdminMode) return; // تأكيد أن الوضع هو وضع الإدارة
+
+                const newLog = getNewLogData(this);
+                logs[logId].push(newLog);
+                saveLogs(logId);
+                renderLogs(logId);
+                this.reset();
+                if(logId === 'visitor-survey') {
+                    this.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+                }
+            });
+        }
+
+        // 1. سجل قياس درجة حرارة الثلاجات
+        setupLogForm('fridge-temp-log', (form) => ({
+            date: form.querySelector('#ft-date').value,
+            number: form.querySelector('#ft-number').value,
+            start: form.querySelector('#ft-start').value,
+            end: form.querySelector('#ft-end').value,
+            notes: form.querySelector('#ft-notes').value,
+        }));
+
+        // 2. سجل المطهي والمجهز والمتبل
+        setupLogForm('cooked-log', (form) => ({
+            date: form.querySelector('#c-date').value,
+            product: form.querySelector('#c-product').value,
+            status: form.querySelector('#c-status').value,
+            fireTemp: form.querySelector('#c-fire-temp').value,
+            fridgeTemp: form.querySelector('#c-fridge-temp').value,
+            inspector: form.querySelector('#c-inspector').value,
+        }));
+
+        // 3. سجل تنظيف وتعقيم المعدات
+        setupLogForm('sanitation-log', (form) => ({
+            date: form.querySelector('#s-date').value,
+            type: form.querySelector('#s-type').value,
+            items: form.querySelector('#s-items').value,
+            time: form.querySelector('#s-time').value,
+            responsible: form.querySelector('#s-responsible').value,
+        }));
+
+        // 4. سجل إعدام الزيت
+        setupLogForm('oil-disposal-log', (form) => ({
+            date: form.querySelector('#o-date').value,
+            quantity: form.querySelector('#o-quantity').value,
+        }));
+
+        // 5. سجل مراقبة الاستلام
+        setupLogForm('receipt-log', (form) => ({
+            date: form.querySelector('#r-date').value,
+            product: form.querySelector('#r-product').value,
+            temp: form.querySelector('#r-temp').value,
+            inspection: form.querySelector('#r-inspection').value,
+        }));
+
+        // 6. سجل قياس درجة حرارة السيارة
+        setupLogForm('car-temp-log', (form) => ({
+            date: form.querySelector('#ct-date').value,
+            temp: form.querySelector('#ct-temp').value,
+        }));
+        
+        // 7. سجل المحاضرات
+        setupLogForm('lectures-log', (form) => ({
+            date: form.querySelector('#l-date').value,
+            type: form.querySelector('#l-type').value,
+            lecturer: form.querySelector('#l-lecturer').value,
+        }));
+
+        // 8. سجل تسييح اللحمة للتشغيل
+        setupLogForm('thawing-log', (form) => ({
+            date: form.querySelector('#t-date').value,
+            type: form.querySelector('#t-type').value,
+            number: form.querySelector('#t-number').value,
+            temp: form.querySelector('#t-temp').value,
+            notes: form.querySelector('#t-notes').value,
+        }));
+
+        // 9. سجل الحالات المرضية
+        setupLogForm('medical-log', (form) => ({
+            date: form.querySelector('#m-date').value,
+            name: form.querySelector('#m-name').value,
+            symptoms: form.querySelector('#m-symptoms').value,
+        }));
+        
+        // 10. سجل المرتجعات
+        setupLogForm('returns-log', (form) => ({
+            date: form.querySelector('#ret-date').value,
+            product: form.querySelector('#ret-product').value,
+        }));
+
+        // 11. استبيان صحة الزائرين 
+        setupLogForm('visitor-survey', (form) => {
+            const symptoms = [];
+            let hadSymptoms = false;
+            
+            form.querySelectorAll('.symptom-table tr').forEach((row, index) => {
+                if (index > 0) { 
+                    const symptomRadios = row.querySelectorAll(`input[name="symptom${index}"]`);
+                    symptomRadios.forEach(radio => {
+                        if (radio.checked) {
+                            symptoms.push(radio.value);
+                            if (radio.value === 'نعم') hadSymptoms = true;
+                        }
+                    });
+                }
+            });
+            
+            return {
+                date: form.querySelector('#vs-date').value,
+                name: form.querySelector('#vs-name').value,
+                purpose: form.querySelector('#vs-purpose').value,
+                institution: form.querySelector('#vs-institution').value,
+                symptoms: hadSymptoms ? 'نعم (أعراض)' : 'لا',
+                fullSymptoms: symptoms.join(', '), 
+                signature: form.querySelector('#vs-signature').value,
+                signatureDate: form.querySelector('#vs-signature-date').value
+            };
+        });
+
+        // **الإعداد الأولي:** يبدأ التطبيق بعرض شاشة تسجيل الدخول فقط.
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('login-screen').style.display = 'flex'; 
+            document.getElementById('app-container').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
