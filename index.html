@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام السجلات الموحد (واجهة دخول بملء الشاشة)</title>
     
-    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#007bff">
     <link rel="apple-touch-icon" href="https://i.ibb.co/0jRJCBmL/111.jpg">
     <link rel="icon" href="https://i.ibb.co/0jRJCBmL/111.jpg">
@@ -734,10 +733,8 @@
 
         const ADMIN_PASSWORD = '111975'; 
         
-        // المتغير العالمي لتخزين وضع المستخدم بعد تسجيل الدخول
         let isGlobalAdminMode = false; 
 
-        // تعريف جميع السجلات
         const LOG_KEYS = {
             'fridge-temp-log': 'fridgeTempLog',
             'cooked-log': 'cookedLog',
@@ -772,7 +769,7 @@
             }
         }
         
-        // --- Modal Functions (كما كانت) ---
+        // --- Modal Functions ---
 
         const modal = document.getElementById("infoModal");
         const modalTitle = document.getElementById("modal-title");
@@ -831,22 +828,18 @@
         function startApp(is_admin) {
             isGlobalAdminMode = is_admin;
             
-            // إخفاء شاشة الدخول وعرض واجهة التطبيق
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-container').style.display = 'flex';
             
-            // عرض القائمة الرئيسية
             navigateToLog('main-page'); 
         }
 
         function navigateToLog(pageId) {
-            // إخفاء جميع الصفحات
             document.getElementById('main-page').style.display = 'none';
             document.querySelectorAll('.log-page').forEach(page => {
                 page.style.display = 'none';
             });
             
-            // عرض الصفحة المطلوبة
             document.getElementById(pageId).style.display = 'block';
 
             if (pageId !== 'main-page') {
@@ -861,13 +854,11 @@
             const statusText = document.getElementById(`${logId}-mode-status`);
             const form = document.getElementById(`${logId}-form`);
             
-            // تحديث شريط الوضع الحالي
             if (statusText) {
                 statusText.textContent = is_admin ? 'إدارة (إضافة وحذف)' : 'زائر (قراءة فقط)';
                 statusText.style.color = is_admin ? 'var(--danger-color)' : 'var(--success-color)';
             }
             
-            // عرض أو إخفاء نموذج الإدخال
             if (form) {
                 const displayStyle = (logId === 'visitor-survey' ? 'block' : 'grid');
                 form.style.display = is_admin ? displayStyle : 'none';
@@ -877,16 +868,15 @@
         }
 
 
-        // --- Rendering Logic (تم التحديث ليشمل جميع السجلات) ---
+        // --- Rendering Logic ---
 
         function renderLogs(logId) {
             const tbody = document.getElementById(`${logId}-body`);
             tbody.innerHTML = '';
             
             const currentLogs = logs[logId];
-            const isAdmin = isGlobalAdminMode; // استخدام الوضع العام
+            const isAdmin = isGlobalAdminMode; 
 
-            // إظهار أو إخفاء عمود الحذف (الخلية الأخيرة في الرأس)
             const headerRow = document.querySelector(`#${logId}-table thead tr`);
             if (headerRow) {
                 const lastHeader = headerRow.cells[headerRow.cells.length - 1];
@@ -953,7 +943,7 @@
             });
         }
         
-        // --- Form Submission Handlers (كما كانت) ---
+        // --- Form Submission Handlers ---
         
         function setupLogForm(logId, getNewLogData) {
             const form = document.getElementById(`${logId}-form`);
@@ -961,7 +951,7 @@
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault(); 
-                if (!isGlobalAdminMode) return; // تأكيد أن الوضع هو وضع الإدارة
+                if (!isGlobalAdminMode) return; 
 
                 const newLog = getNewLogData(this);
                 logs[logId].push(newLog);
@@ -1080,15 +1070,81 @@
             };
         });
 
-        // **الإعداد الأولي وتسجيل PWA:**
+        // =================================================================
+        // PWA: منطق تسجيل Manifest و Service Worker باستخدام Blob URLs
+        // =================================================================
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('login-screen').style.display = 'flex'; 
             document.getElementById('app-container').style.display = 'none';
-            
-            // PWA: تسجيل Service Worker
+
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker registered!', reg))
+                // 1. توليد Manifest (ملف البيان) باستخدام Blob URL
+                const MANIFEST_CONTENT = JSON.stringify({
+                    "name": "نظام السجلات الموحد",
+                    "short_name": "السجلات",
+                    "description": "نظام الإدارة المركزية للسجلات والجودة",
+                    "start_url": ".",
+                    "display": "standalone",
+                    "background_color": "#ffffff",
+                    "theme_color": "#007bff",
+                    "icons": [
+                        {"src": "https://i.ibb.co/0jRJCBmL/111.jpg", "sizes": "192x192", "type": "image/jpeg"},
+                        {"src": "https://i.ibb.co/0jRJCBmL/111.jpg", "sizes": "512x512", "type": "image/jpeg"}
+                    ]
+                });
+                const manifestBlob = new Blob([MANIFEST_CONTENT], {type: 'application/json'});
+                const manifestURL = URL.createObjectURL(manifestBlob);
+
+                // إضافة رابط البيان إلى الـ head
+                const manifestLink = document.createElement('link');
+                manifestLink.rel = 'manifest';
+                manifestLink.href = manifestURL;
+                document.head.appendChild(manifestLink);
+                
+                // 2. كود Service Worker
+                const SW_CODE = `
+                    const CACHE_NAME = 'records-v1';
+                    const urlsToCache = [
+                        // Caching the external assets (Icon and Font)
+                        'https://i.ibb.co/0jRJCBmL/111.jpg',
+                        'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap'
+                    ];
+
+                    self.addEventListener('install', event => {
+                      event.waitUntil(
+                        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)).catch(err => {
+                            console.error('Failed to cache assets:', err);
+                        })
+                      );
+                      self.skipWaiting();
+                    });
+
+                    self.addEventListener('activate', event => {
+                        event.waitUntil(
+                            caches.keys().then(cacheNames => Promise.all(
+                                cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
+                            ))
+                        );
+                        self.clients.claim();
+                    });
+
+                    self.addEventListener('fetch', event => {
+                      event.respondWith(
+                        caches.match(event.request).then(response => response || fetch(event.request))
+                      );
+                    });
+                `;
+
+                // 3. تسجيل Service Worker
+                const swBlob = new Blob([SW_CODE], { type: 'application/javascript' });
+                const swURL = URL.createObjectURL(swBlob);
+
+                navigator.serviceWorker.register(swURL, { scope: './' })
+                .then(reg => {
+                    console.log('Service Worker registered from Blob!', reg);
+                    // تحرير الـ URL بعد التسجيل لعدم الحاجة إليه
+                    URL.revokeObjectURL(swURL); 
+                })
                 .catch(err => console.error('Service Worker registration failed:', err));
             }
         });
