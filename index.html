@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام السجلات الموحد (واجهة دخول بملء الشاشة)</title>
     
-    <link rel="icon" href="https://i.ibb.co/0jRJCBmL/111.jpg" type="image/jpeg">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/0jRJCBmL/111.jpg" sizes="192x192">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/0jRJCBmL/111.jpg">
+    <link rel="icon" href="https://i.ibb.co/0jRJCBmL/111.jpg">
     
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -1078,10 +1080,17 @@
             };
         });
 
-        // **الإعداد الأولي:** يبدأ التطبيق بعرض شاشة تسجيل الدخول فقط.
+        // **الإعداد الأولي وتسجيل PWA:**
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('login-screen').style.display = 'flex'; 
             document.getElementById('app-container').style.display = 'none';
+            
+            // PWA: تسجيل Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker registered!', reg))
+                .catch(err => console.error('Service Worker registration failed:', err));
+            }
         });
     </script>
 </body>
